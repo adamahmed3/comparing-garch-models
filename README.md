@@ -32,7 +32,7 @@ $$
 h_t=\omega+\alpha\epsilon_{t-1}^2+\beta h_{t-1}
 $$
 
-\(\omega\) is the variance constant, \(\alpha\) measures the effect of recent shocks, and \(\beta\) measures the persistence of volatility.
+$\omega$ is the variance constant, $\alpha$ measures the effect of recent shocks, and $\beta$ measures the persistence of volatility.
 
 ### 3. GJR-GARCH(1,1)-t
 
@@ -46,7 +46,7 @@ h_t={}&\omega+\alpha\epsilon_{t-1}^2\\
 \end{aligned}
 $$
 
-The indicator function \(I(\epsilon_{t-1}<0)\) equals 1 when the previous shock is negative and 0 otherwise. The model uses a t distribution for the return shocks.
+The indicator function $I(\epsilon_{t-1}<0)$ equals 1 when the previous shock is negative and 0 otherwise. The model uses a t distribution for the return shocks.
 
 ### 4. Incorporating Implied Volatility
 
