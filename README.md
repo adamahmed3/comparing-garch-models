@@ -6,56 +6,96 @@ This project compares three GARCH-based models for forecasting stock price movem
 
 The aim is to see whether adding a t distribution, asymmetric volatility and implied volatility improves the forecasts.
 
-
 ## Models
 
-- **GARCH(1,1):** Uses past returns and volatility to estimate future volatility, with normally distributed shocks.
-- **GARCH(1,1)-t:** Uses a t distribution to allow for larger return movements.
-- **GJR-GARCH(1,1)-t-IV:** Accounts for the different effects of positive and negative returns and incorporates options-implied volatility.
+- **GARCH(1,1):** Uses normally distributed shocks to estimate future volatility based on past returns and volatility.
+- **GJR-GARCH(1,1)-t:** Adjusts for the different effects of positive and negative returns, using a t distribution for more probability of large shocks.
+- **GJR-GARCH(1,1)-t-IV:** Builds on GJR-GARCH-t by incorporating options-implied volatility into the variance estimate.
 
 ## Mathematical Methods
 
-Daily log returns are calculated as:
+### 1. Log Returns
+
+Daily log returns are calculated from closing prices:
 
 \[
 r_t=\ln\left(\frac{S_t}{S_{t-1}}\right)
 \]
 
-The standard GARCH model estimates conditional variance using:
+then multiplied by 100 for model estimation.
+
+### 2. GARCH(1,1)
+
+The standard normal GARCH model estimates conditional variance using the previous period's squared error and variance:
 
 \[
 h_t=\omega+\alpha\epsilon_{t-1}^2+\beta h_{t-1}
 \]
 
-The GJR-GARCH model adds a term to account for negative returns:
+\(\omega\) is the variance constant, \(\alpha\) measures the effect of recent shocks, and \(\beta\) measures the persistence of volatility.
+
+### 3. GJR-GARCH(1,1)-t
+
+The GJR-GARCH model adds a term to account for the effect of negative returns, allowing negative shocks to affect volatility differently from positive shocks. It also uses a t distribution for the simulated return shocks, which has heavier tails than a normal distribution. This makes larger price movements more likely in the simulations, helping the model account for extreme market movements.
 
 \[
-h_t=\omega+\alpha\epsilon_{t-1}^2+
-\gamma I(\epsilon_{t-1}<0)\epsilon_{t-1}^2+\beta h_{t-1}
+\begin{aligned}
+h_t={}&\omega+\alpha\epsilon_{t-1}^2\\
+&+\gamma I(\epsilon_{t-1}<0)\epsilon_{t-1}^2\\
+&+\beta h_{t-1}
+\end{aligned}
 \]
 
-For the IV model, GJR-GARCH variance and implied variance are combined using equal weights:
+The indicator function \(I(\epsilon_{t-1}<0)\) equals 1 when the previous shock is negative and 0 otherwise. The model uses a t distribution for the return shocks.
+
+### 4. Incorporating Implied Volatility
+
+The third model combines GJR-GARCH variance with options-implied variance using equal weights:
 
 \[
 h_t^{blend}=0.5h_t^{GJR}+0.5h_t^{IV}
 \]
 
-Monte Carlo simulation then generates 100,000 possible price paths over five trading days.
+This allows the model to use both historical price behaviour and information from the options market.
+
+## Monte Carlo Simulation
+
+Each model is used to simulate 100,000 possible price paths over five trading days. Simulated returns are applied to the latest price to generate possible future NVDA prices.
+
+The price update is:
+
+\[
+S_{t+1}=S_t\exp\left(\frac{\epsilon_{t+1}}{100}\right)
+\]
+
+The resulting paths are used to examine the range of possible future prices and estimate prediction intervals.
 
 ## Backtesting
 
-The models are tested across 49 historical forecast dates. Performance is measured using:
+The models are evaluated across 49 historical forecast dates. Their forecasts are compared with actual prices using the following metrics:
 
-- Median and mean absolute price error
-- Root mean squared error (RMSE)
-- Mean absolute percentage error (MAPE)
-- 90% prediction interval coverage
-- Average prediction interval width
-- Mean absolute volatility error
+- **Median absolute price error:** The median absolute difference between forecast and actual prices.
+- **Mean absolute error (MAE):** The average absolute price error.
+- **Root mean squared error (RMSE):** Gives greater weight to larger forecast errors.
+- **Mean absolute percentage error (MAPE):** Measures average error as a percentage of actual prices.
+- **90% prediction interval coverage:** The percentage of actual prices falling within the predicted intervals.
+- **Average interval width:** Measures how wide the prediction intervals are.
+- **Mean absolute volatility error:** Measures the difference between forecast and realised volatility.
+
+These metrics help compare price accuracy, volatility forecasts and the uncertainty captured by each model.
 
 ## Tools and Data
 
 - Python
-- NumPy, pandas and SciPy
+- NumPy and pandas for data handling
+- SciPy for statistical calculations
 - `arch` for GARCH model estimation
 - yfinance for historical prices and options data
+- Bloomberg historical implied-volatility data for the IV backtest
+- Matplotlib for visualising the results
+
+## Limitations
+
+The project uses NVDA as a case study, with forecasts limited to five trading days. Results may differ for other stocks, forecast horizons or market conditions. Historical backtesting also depends on the availability and consistency of the price and implied-volatility data.
+
+This project is for educational purposes and is not investment advice.
