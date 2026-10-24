@@ -1,4 +1,4 @@
-# NVDA Volatility Forecasting
+# Comparing GARCH Models for Stock Price Forecasting
 
 ## Overview
 
